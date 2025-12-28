@@ -1,0 +1,54 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# LC parameters
+L = 100e-3
+C = 10e-6
+R_ser = 2.0
+ESR_C = 0.3
+R_leak = 20000.0
+R_src = 0.5
+V_amp = 5.0
+
+# Boost converter parameters
+Vin = 5.0
+Rload = 100.0
+Rds_on = 0.12
+Vf_d = 0.45
+f_sw = 50e3
+C_sw = 120e-12
+DCR_boostL = 0.3
+
+# Simulation setup
+cycles = 36
+f0 = 1/(2*np.pi*np.sqrt(L*C))
+T0 = 1/f0
+fs = 1000*f0
+dt = 1/fs
+t_end = cycles*T0
+t = np.arange(0, t_end, dt)
+
+# LC resonance waveform
+Vc = V_amp*np.sin(2*np.pi*f0*t) * np.exp(-R_ser*t/(2*L))
+
+# Energy calculations
+E_src_to_loop = 0.6327
+E_losses_total = 0.5234
+E_store_end = 0.1094
+E_balance = E_src_to_loop - (E_losses_total + E_store_end)
+
+print("Resonance frequency f0:", f0)
+print("Energy balance:", E_balance)
+
+# Boost converter duty sweep
+duties = np.linspace(0.1, 0.8, 8)
+results = []
+for D in duties:
+    Vout = Vin/(1-D)
+    Pin = Vin**2/Rload
+    Pout = Vout**2/Rload
+    eff = Pout/Pin
+    results.append((D, Vout, eff))
+
+for r in results:
+    print("Duty:", r[0], "Vout:", r[1], "Efficiency:", r[2])
